@@ -1,0 +1,27 @@
+pipeline {
+    agent any
+     tools {
+        maven 'M2_HOME'
+     }
+    stages {
+
+        stage('all maven commands') {
+            steps {
+                sh 'mvn clean test compile install package'
+            }
+        }
+        stage('image build'){
+            steps{
+                sh 'aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 107824223202.dkr.ecr.us-east-1.amazonaws.com'
+                sh 'docker build -t geo-app .'
+            }
+        }
+        stage('push image'){
+            steps{
+                sh 'docker tag geo-app:latest 107824223202.dkr.ecr.us-east-1.amazonaws.com/geo-app:latest'
+                sh 'docker push 107824223202.dkr.ecr.us-east-1.amazonaws.com/geo-app:latest'
+            }
+        }
+    }
+
+}
